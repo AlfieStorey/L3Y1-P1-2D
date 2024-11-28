@@ -5,64 +5,63 @@ using TMPro;
 using UnityEditor.Callbacks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-
+using UnityEngine.UI;
+ 
 public class PlayerController : MonoBehaviour
 {
+ 
     [Header("UI")]
-    public TMP_Text timerTxt;
     public float timer;
-
+    public TMP_Text timerTxt;
+ 
     [Header("Health")]
+    public Slider healthSlider;
     public int maxHealth;
     public int currentHealth;
-
-    [Header("Shooting")]
-    public Transform shootingPoint;
-    public GameObject bullet;
-    bool isFacingRight;
-
-    [Header("Main")]
+ 
+    [Header("Movement")]
+ 
     public float moveSpeed;
     public float jumpForce;
-    float inputs;
+    public float inputs;
+ 
+    [Header("Components")]
+ 
     public Rigidbody2D rb;
     public float groundDistance;
     public LayerMask layerMask;
-
+ 
     RaycastHit2D hit;
-
-    Vector3 startPos;
-
+ 
+    Vector2 startPos;
+   
     // Start is called before the first frame update
     void Start()
     {
-        startPos = transform.position;
+        healthSlider.maxValue = maxHealth;
 
         currentHealth = maxHealth;
-
-        isFacingRight = true;
+        startPos = transform.position;
     }
-
+ 
     // Update is called once per frame
     void Update()
     {
         timer += Time.deltaTime;
         timerTxt.text = timer.ToString("F2");
-        
+ 
         Movement();
         Health();
-        Shoot();
-        MovementDirection();
     }
-
+ 
     void Movement()
     {
-        inputs = Input.GetAxisRaw("Horizontal");
+        inputs = Input.GetAxis("Horizontal");
         rb.velocity = new UnityEngine.Vector2(inputs * moveSpeed, rb.velocity.y);
-
+ 
         hit = Physics2D.Raycast(transform.position, -transform.up, groundDistance, layerMask);
-        Debug.DrawRay(transform.position, -transform.up * groundDistance, Color.yellow);
-
+        Debug.DrawRay(transform.position, -transform.up * groundDistance, Color.red);
+ 
         if (hit.collider)
         {
             if (Input.GetButtonDown("Jump"))
@@ -71,55 +70,37 @@ public class PlayerController : MonoBehaviour
             }
         }
     }
-
+ 
     void Health()
     {
+        healthSlider.value = currentHealth;
+
         if (currentHealth <= 0)
         {
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
+       
     }
-
-    void Shoot()
+ 
+    void OnTriggerEnter2D(Collider2D other)
     {
-        if (Input.GetKeyDown(KeyCode.UpArrow))
-        {
-            Instantiate(bullet, shootingPoint.position, shootingPoint.rotation);
-        }
-    }
-
-    void MovementDirection()
-    {
-        if (isFacingRight && inputs < -.1f)
-        {
-            Flip();
-        }
-        else if (!isFacingRight && inputs > .1f)
-        {
-            Flip();
-        }
-    }
-
-    void Flip()
-    {
-        isFacingRight = !isFacingRight;
-        transform.Rotate(0f, 180f, 0f);
-    }
-    private void OnTriggerEnter2D(Collider2D other) 
-    {
-        if (other.gameObject.CompareTag("Hazard"))
+        if(other.gameObject.tag == "Hazard")
         {
             transform.position = startPos;
         }
-        if (other.gameObject.CompareTag("Exit"))
+        else if(other.gameObject.tag == "Exit")
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
         }
+        else if(other.gameObject.tag == "Checkpoint")
+        {
+            startPos = transform.position;
+        }
         else if(other.gameObject.CompareTag("Enemy"))
         {
-            Debug.Log("Hit!");
             currentHealth--;
             Destroy(other.gameObject);
         }
     }
+ 
 }
