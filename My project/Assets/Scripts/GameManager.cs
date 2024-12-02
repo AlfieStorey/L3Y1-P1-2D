@@ -1,12 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class NewBehaviourScript : MonoBehaviour
 {
     public Canvas inGame;
     public Canvas pauseMenu;
-    bool isPaused;
+    public bool isPaused;
     // Start is called before the first frame update
     void Start()
     {
@@ -25,16 +27,25 @@ public class NewBehaviourScript : MonoBehaviour
 
         if (isPaused)
         {
-            time.timeScale = 0f;
+            Time.timeScale = 0f;
             inGame.enabled = false;
             pauseMenu.enabled = true;
         }
         else
         {
-            time.timeScale = 1f;
-            inGame.enabled = false;
-            pauseMenu.enabled = true;
+            Time.timeScale = 1f;
+            inGame.enabled = true;
+            pauseMenu.enabled = false;
         }
     }
+
+    public void OnPlay()
+    {
+        isPaused = false;
+    }
+
+    public void OnExit()
+    {
+        SceneManager.LoadScene("MainMenu");
+    }
 }
-4m 30 secs into the video ;)
